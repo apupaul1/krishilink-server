@@ -118,4 +118,4 @@ npm run dev
 
 ## 👨‍💻 Author
 
-Developed by **Your Name**
+Developed by **Apu Paul**
