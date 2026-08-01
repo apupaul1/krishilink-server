@@ -43,6 +43,24 @@ const getAllProducts = async (
   }
 };
 
+const getFeaturedProducts = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const result = await ProductService.getFeaturedProducts();
+
+    res.status(200).json({
+      success: true,
+      message: "Featured products fetched successfully",
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const getSingleProduct = async (
   req: Request<ProductParams>,
   res: Response,
@@ -106,6 +124,7 @@ const deleteProduct = async (
 export const ProductController = {
   createProduct,
   getAllProducts,
+  getFeaturedProducts,
   getSingleProduct,
   updateProduct,
   deleteProduct,
