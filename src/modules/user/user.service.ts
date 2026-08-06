@@ -1,8 +1,8 @@
-import { ICreateUser, IUpdateUser, IUser } from "./user.interface";
+import { ICreateUser, IUpdateUser, IUser, TRole } from "./user.interface";
 import { db } from "../../app/config/db";
 import { ObjectId } from "mongodb";
 
-const userCollection = db.collection<IUser>("users");
+export const userCollection = db.collection<IUser>("users");
 
 const createUser = async (payload: ICreateUser) => {
   const existingUser = await userCollection.findOne({
@@ -17,7 +17,7 @@ const createUser = async (payload: ICreateUser) => {
     ...payload,
     role: "user",
     createdAt: new Date(),
-    updatedAt: new Date()
+    updatedAt: new Date(),
   };
 
   await userCollection.insertOne(user);
@@ -33,10 +33,7 @@ const getSingleUser = async (email: string) => {
   return await userCollection.findOne({ email });
 };
 
-const updateUser = async (
-  id: string,
-  payload: IUpdateUser,
-) => {
+const updateUser = async (id: string, payload: IUpdateUser) => {
   const result = await userCollection.findOneAndUpdate(
     {
       _id: new ObjectId(id),
@@ -61,10 +58,26 @@ const deleteUser = async (id: string) => {
   });
 };
 
+const updateUserRole = async (email: string, role: TRole) => {
+  const result = await userCollection.updateOne(
+    {
+      email,
+    },
+    {
+      $set: {
+        role,
+      },
+    },
+  );
+
+  return result;
+};
+
 export const UserService = {
   createUser,
   getUsers,
   getSingleUser,
   updateUser,
   deleteUser,
+  updateUserRole
 };
