@@ -29,9 +29,7 @@ const getUsers = async (req: Request, res: Response) => {
 };
 
 const getSingleUser = async (req: Request, res: Response) => {
-  const result = await UserService.getSingleUser(
-    req.params.email as string,
-  );
+  const result = await UserService.getSingleUser(req.params.email as string);
 
   sendResponse(res, {
     statusCode: 200,
@@ -42,10 +40,7 @@ const getSingleUser = async (req: Request, res: Response) => {
 };
 
 const updateUser = async (req: Request<UserParams>, res: Response) => {
-  const result = await UserService.updateUser(
-    req.params.id,
-    req.body,
-  );
+  const result = await UserService.updateUser(req.params.id, req.body);
 
   sendResponse(res, {
     statusCode: 200,
@@ -56,14 +51,37 @@ const updateUser = async (req: Request<UserParams>, res: Response) => {
 };
 
 const deleteUser = async (req: Request<UserParams>, res: Response) => {
-  const result = await UserService.deleteUser(
-    req.params.id,
-  );
+  const result = await UserService.deleteUser(req.params.id);
 
   sendResponse(res, {
     statusCode: 200,
     success: true,
     message: "User deleted successfully.",
+    data: result,
+  });
+};
+
+const getUserRole = async (req: Request, res: Response) => {
+  const result = await UserService.getUserRole(req.params.email as string);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "User role retrieved successfully.",
+    data: result,
+  });
+};
+
+const updateUserRole = async (req: Request, res: Response) => {
+  const { email } = req.params;
+  const { role } = req.body;
+
+  const result = await UserService.updateUserRole(email as string, role);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "User role updated successfully.",
     data: result,
   });
 };
@@ -74,4 +92,6 @@ export const UserController = {
   getSingleUser,
   updateUser,
   deleteUser,
+  getUserRole,
+  updateUserRole
 };

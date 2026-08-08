@@ -8,7 +8,7 @@ const router = Router();
 
 router.use("/categories", CategoryRoutes);
 router.use("/products", ProductRoutes);
-router.use("/users", UserRoutes)
-router.use("/farmer-applications", FarmerApplicationRoutes)
+router.use("/users", UserRoutes);
+router.use("/farmer-applications", FarmerApplicationRoutes);
 
 export default router;

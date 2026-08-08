@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { FarmerService } from "./farmerApplication.service";
 import { sendResponse } from "../../app/utils/sendResponse";
+import { userCollection } from "../user/user.service";
 
 type ApplicationParams = {
   id: string;
@@ -19,6 +20,12 @@ const createApplication = async (req: Request, res: Response) => {
 
 const getAllApplications = async (req: Request, res: Response) => {
   const { status, email } = req.query;
+
+  if (email !== req.user.email) {
+    const currentUser = await userCollection.findOne({
+      email: req.user.email
+    });
+  }
 
   const result = await FarmerService.getAllApplications({
     status: status as "pending" | "approved" | "rejected" | undefined,

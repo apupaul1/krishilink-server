@@ -5,6 +5,7 @@ import { ObjectId } from "mongodb";
 export const userCollection = db.collection<IUser>("users");
 
 const createUser = async (payload: ICreateUser) => {
+  
   const existingUser = await userCollection.findOne({
     email: payload.email,
   });
@@ -34,7 +35,7 @@ const getSingleUser = async (email: string) => {
 };
 
 const updateUser = async (id: string, payload: IUpdateUser) => {
-  const result = await userCollection.findOneAndUpdate(
+  const result = await userCollection.updateOne(
     {
       _id: new ObjectId(id),
     },
@@ -44,18 +45,21 @@ const updateUser = async (id: string, payload: IUpdateUser) => {
         updatedAt: new Date(),
       },
     },
-    {
-      returnDocument: "after",
-    },
   );
 
   return result;
 };
 
 const deleteUser = async (id: string) => {
-  return await userCollection.findOneAndDelete({
+  return await userCollection.deleteOne({
     _id: new ObjectId(id),
   });
+};
+
+const getUserRole = async (email: string) => {
+  const result = await userCollection.findOne({ email: email });
+
+  return result?.role;
 };
 
 const updateUserRole = async (email: string, role: TRole) => {
@@ -79,5 +83,6 @@ export const UserService = {
   getSingleUser,
   updateUser,
   deleteUser,
-  updateUserRole
+  getUserRole,
+  updateUserRole,
 };
