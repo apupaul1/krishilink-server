@@ -3,7 +3,7 @@ import {
   ICreateFarmerApplication,
   IFarmerApplication,
   TFarmerApplicationStatus,
-} from "./farmerApplication.interface";
+} from "./farmer.interface";
 import { db } from "../../app/config/db";
 import { userCollection, UserService } from "../user/user.service";
 
@@ -88,7 +88,7 @@ const updateApplicationStatus = async (
     await UserService.updateUserRole(application.email, "farmer");
   }
 
-  return result;  
+  return result;
 };
 
 const deleteApplication = async (id: string) => {

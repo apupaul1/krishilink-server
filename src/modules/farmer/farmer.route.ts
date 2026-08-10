@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { FarmerController } from "./farmerApplication.controller";
+import { FarmerController } from "./farmer.controller";
 import verifyFirebaseToken from "../../app/middlewares/verifyFirebaseToken";
 
 const router = Router();
@@ -12,4 +12,4 @@ router.patch("/:id", FarmerController.updateApplication);
 
 router.delete("/:id", FarmerController.deleteApplication);
 
-export const FarmerApplicationRoutes = router;
+export const FarmerRoutes = router;

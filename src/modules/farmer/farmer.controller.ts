@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { FarmerService } from "./farmerApplication.service";
+import { FarmerService } from "./farmer.service";
 import { sendResponse } from "../../app/utils/sendResponse";
 import { userCollection } from "../user/user.service";
 
@@ -23,7 +23,7 @@ const getAllApplications = async (req: Request, res: Response) => {
 
   if (email !== req.user.email) {
     const currentUser = await userCollection.findOne({
-      email: req.user.email
+      email: req.user.email,
     });
   }
 
