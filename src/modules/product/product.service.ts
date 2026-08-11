@@ -2,7 +2,7 @@ import { ObjectId } from "mongodb";
 import { db } from "../../app/config/db";
 import { IProduct } from "./product.interface";
 
-const productCollection = db.collection<IProduct>("products");
+export const productCollection = db.collection<IProduct>("products");
 
 const createProduct = async (payload: IProduct) => {
   const product = {
