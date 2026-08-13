@@ -10,6 +10,7 @@ const createProduct = async (payload: IProduct) => {
     createdAt: new Date(),
     updatedAt: new Date(),
     isAvailable: payload.stock > 0,
+    baseDeliveryCharge: 50,
   };
 
   const result = await productCollection.insertOne(product);
@@ -20,7 +21,12 @@ const createProduct = async (payload: IProduct) => {
 const getAllProducts = async (email?: string) => {
   const query = email ? { "farmer.email": email } : {};
 
-  const result = await productCollection.find(query).toArray();
+  const result = await productCollection
+    .find(query)
+    .sort({
+      createdAt: -1,
+    })
+    .toArray();
 
   return result;
 };

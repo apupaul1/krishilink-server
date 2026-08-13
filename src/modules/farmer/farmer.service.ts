@@ -7,7 +7,7 @@ import {
 import { db } from "../../app/config/db";
 import { userCollection, UserService } from "../user/user.service";
 
-const farmerCollection = db.collection("farmerCollections");
+const farmerCollection = db.collection("farmers");
 
 const createApplication = async (payload: ICreateFarmerApplication) => {
   // Check user exists

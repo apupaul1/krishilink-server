@@ -2,15 +2,11 @@ import { ObjectId } from "mongodb";
 
 export type TPaymentMethod = "cod" | "sslcommerz";
 
-export type TPaymentStatus =
-  | "pending"
-  | "paid"
-  | "failed";
+export type TPaymentStatus = "pending" | "paid" | "failed";
 
 export type TOrderStatus =
   | "pending"
-  | "confirmed"
-  | "processing"
+  | "preparing"
   | "ready_for_pickup"
   | "assigned"
   | "picked_up"
@@ -18,26 +14,13 @@ export type TOrderStatus =
   | "delivered"
   | "cancelled";
 
-export type TSubOrderStatus =
-  | "pending"
-  | "preparing"
-  | "ready_for_pickup"
-  | "picked_up";
-
 export interface IOrderProduct {
   productId: ObjectId;
+  name: string;
+  image: string;
   quantity: number;
+  unit: "kg" | "piece" | "dozen" | "gram";
   price: number;
-}
-
-export interface ISubOrder {
-  farmerId: string;
-
-  items: IOrderProduct[];
-
-  status: TSubOrderStatus;
-
-  riderId: string | null;
 }
 
 export interface IShippingAddress {
@@ -63,9 +46,18 @@ export interface ICreateOrder {
 export interface IOrder {
   _id?: ObjectId;
 
-  email: string;
+  trackingId: string;
 
-  subOrders: ISubOrder[];
+  customerEmail: string;
+  farmerEmail: string;
+
+  farmerLocation: {
+    district: string;
+    area: string;
+    address: string;
+  };
+
+  items: IOrderProduct[];
 
   shippingAddress: IShippingAddress;
 
@@ -74,11 +66,19 @@ export interface IOrder {
   totalAmount: number;
 
   paymentMethod: TPaymentMethod;
-
   paymentStatus: TPaymentStatus;
 
   orderStatus: TOrderStatus;
 
+  riderId: string | null;
+
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface IGetOrdersQuery {
+  email?: string;
+  farmerEmail?: string;
+  riderId?: string;
+  status?: TOrderStatus;
 }

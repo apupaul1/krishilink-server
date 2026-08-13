@@ -8,4 +8,6 @@ router.post("/", verifyFirebaseToken, OrderController.createOrder);
 
 router.get("/", OrderController.getAllOrders);
 
+router.patch("/:orderId/status", OrderController.updateOrderStatus);
+
 export const OrderRoutes = router;

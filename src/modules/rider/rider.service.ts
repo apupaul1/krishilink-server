@@ -8,7 +8,7 @@ import { db } from "../../app/config/db";
 import { userCollection, UserService } from "../user/user.service";
 import { ICreateRider, IRider, TRiderStatus } from "./rider.interface";
 
-const riderCollection = db.collection("riderCollections");
+const riderCollection = db.collection("riders");
 
 const createRider = async (payload: ICreateRider) => {
   // Check user exists
@@ -35,7 +35,7 @@ const createRider = async (payload: ICreateRider) => {
     throw new Error("Rider application already exists.");
   }
 
-  const application: IRider = {
+  const application: ICreateRider = {
     ...payload,
     status: "pending",
     createdAt: new Date(),
@@ -63,14 +63,20 @@ const getAllRiders = async ({
   return await riderCollection.find(query).sort({ createdAt: -1 }).toArray();
 };
 
-const updateRiderStatus = async (
-  id: string,
-  payload: Partial<IRider>,
-) => {
+const updateRiderStatus = async (id: string, payload: Partial<IRider>) => {
   const application = await riderCollection.findOne({ _id: new ObjectId(id) });
 
   if (!application) {
     throw new Error("Rider not found.");
+  }
+
+  const updateData: Partial<IRider> = {
+    ...payload,
+    updatedAt: new Date(),
+  };
+
+    if (payload.status === "approved") {
+    updateData.workStatus = "available";
   }
 
   const result = await riderCollection.updateOne(
@@ -78,11 +84,7 @@ const updateRiderStatus = async (
       _id: new ObjectId(id),
     },
     {
-      $set: {
-        ...payload,
-        updatedAt: new Date(),
-        workStatus: "available"
-      },
+      $set: updateData,
     },
   );
 
@@ -102,8 +104,8 @@ const deleteRider = async (id: string) => {
 };
 
 export const RiderService = {
-    getAllRiders,
-    createRider,
-    updateRiderStatus,
-    deleteRider
+  getAllRiders,
+  createRider,
+  updateRiderStatus,
+  deleteRider,
 };
