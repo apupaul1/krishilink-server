@@ -10,4 +10,8 @@ router.get("/", OrderController.getAllOrders);
 
 router.patch("/:orderId/status", OrderController.updateOrderStatus);
 
+router.patch("/:orderId/assign-rider", OrderController.assignRider);
+
+router.patch("/:orderId/reject-rider", OrderController.rejectRider);
+
 export const OrderRoutes = router;

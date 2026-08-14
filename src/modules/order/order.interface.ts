@@ -8,7 +8,8 @@ export type TOrderStatus =
   | "pending"
   | "preparing"
   | "ready_for_pickup"
-  | "assigned"
+  | "waiting_for_rider_acceptance"
+  | "rider_assigned"
   | "picked_up"
   | "out_for_delivery"
   | "delivered"
@@ -70,7 +71,7 @@ export interface IOrder {
 
   orderStatus: TOrderStatus;
 
-  riderId: string | null;
+  riderEmail: string | null;
 
   createdAt: Date;
   updatedAt: Date;
@@ -79,6 +80,6 @@ export interface IOrder {
 export interface IGetOrdersQuery {
   email?: string;
   farmerEmail?: string;
-  riderId?: string;
+  riderEmail?: string;
   status?: TOrderStatus;
 }

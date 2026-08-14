@@ -24,12 +24,12 @@ const createOrder = async (req: Request, res: Response) => {
 };
 
 const getAllOrders = async (req: Request, res: Response) => {
-  const { email, farmerEmail, riderId, status } = req.query;
+  const { email, farmerEmail, riderEmail, status } = req.query;
 
   const result = await OrderService.getAllOrders({
     email: email as string | undefined,
     farmerEmail: farmerEmail as string | undefined,
-    riderId: riderId as string | undefined,
+    riderEmail: riderEmail as string | undefined,
     status: status as TOrderStatus | undefined,
   });
 
@@ -55,8 +55,49 @@ const updateOrderStatus = async (req: Request, res: Response) => {
   });
 };
 
+const assignRider = async (req: Request, res: Response) => {
+  const { orderId } = req.params;
+  const { riderEmail } = req.body;
+
+  if (typeof orderId !== "string") {
+    throw new Error("Invalid order ID.");
+  }
+
+  if (!riderEmail) {
+    throw new Error("Rider ID is required.");
+  }
+
+  const result = await OrderService.assignRider(orderId, riderEmail);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Rider assigned successfully.",
+    data: result,
+  });
+};
+
+const rejectRider = async (req: Request, res: Response) => {
+  const { orderId } = req.params;
+
+  if (typeof orderId !== "string") {
+    throw new Error("Invalid order ID.");
+  }
+
+  const result = await OrderService.rejectRider(orderId);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Rider rejected the order successfully.",
+    data: result,
+  });
+};
+
 export const OrderController = {
   createOrder,
   getAllOrders,
   updateOrderStatus,
+  assignRider,
+  rejectRider
 };

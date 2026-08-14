@@ -6,9 +6,14 @@ import {
 } from "../farmer/farmer.interface";
 import { db } from "../../app/config/db";
 import { userCollection, UserService } from "../user/user.service";
-import { ICreateRider, IRider, TRiderStatus } from "./rider.interface";
+import {
+  ICreateRider,
+  IRider,
+  TRiderStatus,
+  TRiderWorkStatus,
+} from "./rider.interface";
 
-const riderCollection = db.collection("riders");
+export const riderCollection = db.collection("riders");
 
 const createRider = async (payload: ICreateRider) => {
   // Check user exists
@@ -50,15 +55,37 @@ const createRider = async (payload: ICreateRider) => {
 const getAllRiders = async ({
   status,
   email,
+  workStatus,
+  district,
+  area,
 }: {
   status?: TRiderStatus;
   email?: string;
+  workStatus?: TRiderWorkStatus;
+  district?: string;
+  area?: string;
 }) => {
   const query: Record<string, unknown> = {};
 
-  if (status) query.status = status;
+  if (status) {
+    query.status = status;
+  }
 
-  if (email) query.email = email;
+  if (email) {
+    query.email = email;
+  }
+
+  if (workStatus) {
+    query.workStatus = workStatus;
+  }
+
+  if (district) {
+    query.district = district;
+  }
+
+  if (area) {
+    query.area = area;
+  }
 
   return await riderCollection.find(query).sort({ createdAt: -1 }).toArray();
 };
@@ -75,7 +102,7 @@ const updateRiderStatus = async (id: string, payload: Partial<IRider>) => {
     updatedAt: new Date(),
   };
 
-    if (payload.status === "approved") {
+  if (payload.status === "approved") {
     updateData.workStatus = "available";
   }
 
@@ -94,6 +121,7 @@ const updateRiderStatus = async (id: string, payload: Partial<IRider>) => {
 
   return result;
 };
+
 
 const deleteRider = async (id: string) => {
   const result = await riderCollection.deleteOne({

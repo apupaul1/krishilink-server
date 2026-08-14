@@ -25,20 +25,18 @@ export const calculateDeliveryCharge = (
   return 100;
 };
 
-
 import { TOrderStatus } from "./order.interface";
 
-export const allowedStatusTransitions: Record<
-  TOrderStatus,
-  TOrderStatus[]
-> = {
+export const allowedStatusTransitions: Record<TOrderStatus, TOrderStatus[]> = {
   pending: ["preparing", "cancelled"],
 
   preparing: ["ready_for_pickup", "cancelled"],
 
-  ready_for_pickup: ["assigned"],
+  ready_for_pickup: ["waiting_for_rider_acceptance"],
 
-  assigned: ["picked_up"],
+  waiting_for_rider_acceptance: ["rider_assigned"],
+
+  rider_assigned: ["picked_up"],
 
   picked_up: ["out_for_delivery"],
 
