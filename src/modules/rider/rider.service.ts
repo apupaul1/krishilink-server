@@ -12,6 +12,7 @@ import {
   TRiderStatus,
   TRiderWorkStatus,
 } from "./rider.interface";
+import { farmerCollection } from "../farmer/farmer.service";
 
 export const riderCollection = db.collection("riders");
 
@@ -28,6 +29,19 @@ const createRider = async (payload: ICreateRider) => {
   // Already a farmer
   if (user.role === "rider") {
     throw new Error("You are already a rider.");
+  }
+
+  if (user.role === "farmer") {
+    throw new Error("Farmer cannot apply for rider role");
+  }
+
+  const isFarmerExist = await farmerCollection.findOne({
+    email: payload.email,
+    status: "pending",
+  });
+
+  if (isFarmerExist) {
+    throw new Error("You already have a pending farmer application.");
   }
 
   // Existing pending application
@@ -121,7 +135,6 @@ const updateRiderStatus = async (id: string, payload: Partial<IRider>) => {
 
   return result;
 };
-
 
 const deleteRider = async (id: string) => {
   const result = await riderCollection.deleteOne({

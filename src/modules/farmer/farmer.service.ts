@@ -6,8 +6,9 @@ import {
 } from "./farmer.interface";
 import { db } from "../../app/config/db";
 import { userCollection, UserService } from "../user/user.service";
+import { riderCollection } from "../rider/rider.service";
 
-const farmerCollection = db.collection("farmers");
+export const farmerCollection = db.collection("farmers");
 
 const createApplication = async (payload: ICreateFarmerApplication) => {
   // Check user exists
@@ -22,6 +23,21 @@ const createApplication = async (payload: ICreateFarmerApplication) => {
   // Already a farmer
   if (user.role === "farmer") {
     throw new Error("You are already a farmer.");
+  }
+
+  if (user.role === "rider") {
+    throw new Error("Rider cannot apply for farmer role");
+  }
+
+  const isRiderApplication = await riderCollection.findOne({
+    email: payload.email,
+    status: "pending",
+  });
+
+  if (isRiderApplication) {
+    throw new Error(
+      "You already have a pending rider application.",
+    );
   }
 
   // Existing pending application
