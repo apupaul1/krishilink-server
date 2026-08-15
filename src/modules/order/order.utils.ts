@@ -1,3 +1,7 @@
+import crypto from "crypto";
+import { TOrderStatus } from "./order.interface";
+
+
 interface ILocation {
   district: string;
   area: string;
@@ -25,7 +29,6 @@ export const calculateDeliveryCharge = (
   return 100;
 };
 
-import { TOrderStatus } from "./order.interface";
 
 export const allowedStatusTransitions: Record<TOrderStatus, TOrderStatus[]> = {
   pending: ["preparing", "cancelled"],
@@ -46,3 +49,11 @@ export const allowedStatusTransitions: Record<TOrderStatus, TOrderStatus[]> = {
 
   cancelled: [],
 };
+
+export function generateTrackingId() {
+  const prefix = "KL";
+  const date = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+  const random = crypto.randomBytes(3).toString("hex").toUpperCase();
+
+  return `${prefix}-${date}-${random}`;
+}

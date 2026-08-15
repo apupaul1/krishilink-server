@@ -2,7 +2,7 @@ import { ObjectId } from "mongodb";
 
 export type TPaymentMethod = "cod" | "sslcommerz";
 
-export type TPaymentStatus = "pending" | "paid" | "failed";
+export type TPaymentStatus = "pending" | "paid" | "failed" | "cancelled";
 
 export type TOrderStatus =
   | "pending"
@@ -42,6 +42,11 @@ export interface ICreateOrder {
   shippingAddress: IShippingAddress;
 
   paymentMethod: TPaymentMethod;
+}
+
+export interface IPreparedOrder {
+  orders: IOrder[];
+  totalAmount: number;
 }
 
 export interface IOrder {

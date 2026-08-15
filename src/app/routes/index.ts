@@ -6,6 +6,7 @@ import { FarmerRoutes } from "../../modules/farmer/farmer.route";
 import { RiderRoutes } from "../../modules/rider/rider.route";
 import { OrderRoutes } from "../../modules/order/order.route";
 import { TrackingRoutes } from "../../modules/tracking/tracking.route";
+import { PaymentRoutes } from "../../modules/payment/payment.route";
 
 const router = Router();
 
@@ -15,6 +16,7 @@ router.use("/users", UserRoutes);
 router.use("/farmers", FarmerRoutes);
 router.use("/riders", RiderRoutes);
 router.use("/orders", OrderRoutes);
-router.use("/trackings", TrackingRoutes)
+router.use("/trackings", TrackingRoutes);
+router.use("/payments", PaymentRoutes);
 
 export default router;

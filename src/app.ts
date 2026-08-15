@@ -4,11 +4,11 @@ import routes from "./app/routes";
 import { notFound } from "./app/middlewares/notFound";
 import { handleError } from "./app/errors/handleError";
 
-
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded());
 
 app.get("/", (req, res) => {
   res.send("KrishiLink Server Running");

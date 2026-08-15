@@ -99,5 +99,5 @@ export const OrderController = {
   getAllOrders,
   updateOrderStatus,
   assignRider,
-  rejectRider
+  rejectRider,
 };
