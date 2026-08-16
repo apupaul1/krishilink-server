@@ -72,6 +72,81 @@ const deleteProduct = async (id: string) => {
   return result;
 };
 
+const decreaseStock = async (
+  items: {
+    productId: ObjectId;
+    quantity: number;
+  }[],
+) => {
+  for (const item of items) {
+    const result = await productCollection.updateOne(
+      {
+        _id: item.productId,
+        stock: {
+          $gte: item.quantity,
+        },
+      },
+      [
+        {
+          $set: {
+            stock: {
+              $subtract: ["$stock", item.quantity],
+            },
+            updatedAt: new Date(),
+          },
+        },
+        {
+          $set: {
+            isAvailable: {
+              $gt: ["$stock", 0],
+            },
+          },
+        },
+      ],
+    );
+
+    if (result.modifiedCount !== 1) {
+      throw new Error(`Insufficient stock for product: ${item.productId}`);
+    }
+  }
+};
+
+const increaseStock = async (
+  items: {
+    productId: ObjectId;
+    quantity: number;
+  }[],
+) => {
+  for (const item of items) {
+    const result = await productCollection.updateOne(
+      {
+        _id: item.productId,
+      },
+      [
+        {
+          $set: {
+            stock: {
+              $add: ["$stock", item.quantity],
+            },
+            updatedAt: new Date(),
+          },
+        },
+        {
+          $set: {
+            isAvailable: {
+              $gt: ["$stock", 0],
+            },
+          },
+        },
+      ],
+    );
+
+    if (result.modifiedCount !== 1) {
+      throw new Error(`Failed to restore stock for product: ${item.productId}`);
+    }
+  }
+};
+
 export const ProductService = {
   createProduct,
   getAllProducts,
@@ -79,4 +154,6 @@ export const ProductService = {
   getSingleProduct,
   updateProduct,
   deleteProduct,
+  decreaseStock,
+  increaseStock,
 };

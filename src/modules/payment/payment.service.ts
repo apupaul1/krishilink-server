@@ -1,9 +1,13 @@
+import { ProductService } from "./../product/product.service";
 import { insertOrders, prepareOrders } from "./../order/order.helper";
 import axios from "axios";
 import crypto from "crypto";
 import { IPayment, ISSLCallback } from "./payment.interface";
 import { ICreateOrder } from "../order/order.interface";
 import { paymentCollection } from "./payment.collection";
+import { CartService } from "../cart/cart.service";
+import { ObjectId } from "mongodb";
+import { OrderService } from "../order/order.service";
 
 export interface IGetPaymentsQuery {
   email?: string;
@@ -24,6 +28,10 @@ const initiateSSLCommerzPayment = async ({
 }) => {
   const transactionId = generateTransactionId();
 
+  const cartProductIds = payload.products.map(
+    (product) => new ObjectId(product.productId),
+  );
+
   // -----------------------------
   // 1. Create pending payment
   // -----------------------------
@@ -40,6 +48,8 @@ const initiateSSLCommerzPayment = async ({
     paymentMethod: "sslcommerz",
 
     status: "pending",
+
+    cartProductIds,
 
     createdAt: new Date(),
 
@@ -295,6 +305,9 @@ const completeSSLCommerzPayment = async (callbackData: ISSLCallback) => {
 
   const orders = await insertOrders(paidOrders);
 
+  // Decrease product stock
+  await OrderService.decreaseStockForOrders(orders);
+
   // --------------------------------
   // 10. Get all order IDs
   // --------------------------------
@@ -321,6 +334,17 @@ const completeSSLCommerzPayment = async (callbackData: ISSLCallback) => {
       },
     },
   );
+
+  try {
+    await CartService.removeCartItems(
+      payment.customerEmail,
+      payment.cartProductIds.map((id) => id.toString()),
+    );
+  } catch (error) {
+    console.error("Failed to remove purchased cart items:", error);
+  }
+
+  // await CartService.clearCart(payment.customerEmail);
 
   // --------------------------------
   // 12. Return

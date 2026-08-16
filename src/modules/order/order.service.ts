@@ -10,13 +10,13 @@ import {
   IPreparedOrder,
 } from "./order.interface";
 
-
 import { allowedStatusTransitions } from "./order.utils";
 import { riderCollection } from "../rider/rider.service";
 import { TrackingService } from "../tracking/tracking.service";
 import { PaymentService } from "../payment/payment.service";
 import { insertOrders, prepareOrders } from "./order.helper";
 import { orderCollection } from "./order.collection";
+import { ProductService } from "../product/product.service";
 
 const createOrder = async (email: string, payload: ICreateOrder) => {
   const prepared = await prepareOrders(email, payload);
@@ -27,6 +27,8 @@ const createOrder = async (email: string, payload: ICreateOrder) => {
 
   if (payload.paymentMethod === "cod") {
     const orders = await insertOrders(prepared.orders);
+
+    await decreaseStockForOrders(orders);
 
     return {
       orders,
@@ -109,6 +111,7 @@ const updateOrderStatus = async (
     updatedAt: new Date(),
   };
 
+  // COD payment becomes paid after delivery
   if (status === "delivered" && order.paymentMethod === "cod") {
     updateData.paymentStatus = "paid";
   }
@@ -116,6 +119,7 @@ const updateOrderStatus = async (
   const result = await orderCollection.updateOne(
     {
       _id: new ObjectId(orderId),
+      orderStatus: order.orderStatus,
     },
     {
       $set: updateData,
@@ -126,13 +130,26 @@ const updateOrderStatus = async (
     throw new Error("Order status was not updated.");
   }
 
+  if (status === "cancelled") {
+    await ProductService.increaseStock(
+      order.items.map((item) => ({
+        productId: new ObjectId(item.productId),
+        quantity: item.quantity,
+      })),
+    );
+  }
+
   await TrackingService.logTracking(order.trackingId, status);
 
-  // Delivery complete → rider available again
-  if (status === "delivered" && order.riderEmail) {
+  // --------------------------------
+  // Rider becomes available
+  // --------------------------------
+
+  if ((status === "delivered" || status === "cancelled") && order.riderEmail) {
     await riderCollection.updateOne(
       {
         email: order.riderEmail,
+        workStatus: "busy",
       },
       {
         $set: {
@@ -151,6 +168,10 @@ const assignRider = async (orderId: string, riderEmail: string) => {
     throw new Error("Invalid order ID.");
   }
 
+  // --------------------------------
+  // 1. Check order
+  // --------------------------------
+
   const order = await orderCollection.findOne({
     _id: new ObjectId(orderId),
   });
@@ -163,42 +184,14 @@ const assignRider = async (orderId: string, riderEmail: string) => {
     throw new Error("Only ready for pickup orders can be assigned to a rider.");
   }
 
-  const rider = await riderCollection.findOne({
-    email: riderEmail,
-    status: "approved",
-    workStatus: "available",
-  });
+  // --------------------------------
+  // 2. Atomically make rider busy
+  // --------------------------------
 
-  if (!rider) {
-    throw new Error("Rider is not available.");
-  }
-
-  const orderResult = await orderCollection.updateOne(
+  const riderResult = await riderCollection.updateOne(
     {
-      _id: new ObjectId(orderId),
-      orderStatus: "ready_for_pickup",
-    },
-    {
-      $set: {
-        riderEmail: rider.email,
-        orderStatus: "waiting_for_rider_acceptance",
-        updatedAt: new Date(),
-      },
-    },
-  );
-
-  if (orderResult.modifiedCount === 0) {
-    throw new Error("Failed to assign rider.");
-  }
-
-  await TrackingService.logTracking(
-    order.trackingId,
-    "waiting_for_rider_acceptance",
-  );
-
-  await riderCollection.updateOne(
-    {
-      _id: rider._id,
+      email: riderEmail,
+      status: "approved",
       workStatus: "available",
     },
     {
@@ -207,6 +200,58 @@ const assignRider = async (orderId: string, riderEmail: string) => {
         updatedAt: new Date(),
       },
     },
+  );
+
+  if (riderResult.modifiedCount === 0) {
+    throw new Error("Rider is not available.");
+  }
+
+  // --------------------------------
+  // 3. Assign rider to order
+  // --------------------------------
+
+  const orderResult = await orderCollection.updateOne(
+    {
+      _id: new ObjectId(orderId),
+      orderStatus: "ready_for_pickup",
+      riderEmail: null,
+    },
+    {
+      $set: {
+        riderEmail,
+        orderStatus: "waiting_for_rider_acceptance",
+        updatedAt: new Date(),
+      },
+    },
+  );
+
+  // --------------------------------
+  // 4. Rollback rider if order failed
+  // --------------------------------
+
+  if (orderResult.modifiedCount === 0) {
+    await riderCollection.updateOne(
+      {
+        email: riderEmail,
+      },
+      {
+        $set: {
+          workStatus: "available",
+          updatedAt: new Date(),
+        },
+      },
+    );
+
+    throw new Error("Failed to assign rider.");
+  }
+
+  // --------------------------------
+  // 5. Tracking
+  // --------------------------------
+
+  await TrackingService.logTracking(
+    order.trackingId,
+    "waiting_for_rider_acceptance",
   );
 
   return orderResult;
@@ -233,18 +278,38 @@ const rejectRider = async (orderId: string) => {
     throw new Error("No rider is assigned to this order.");
   }
 
-  const rider = await riderCollection.findOne({
-    email: order.riderEmail,
-  });
+  const riderEmail = order.riderEmail;
 
-  if (!rider) {
-    throw new Error("Assigned rider not found.");
+  // -----------------------------
+  // 1. Release rider
+  // -----------------------------
+
+  const riderResult = await riderCollection.updateOne(
+    {
+      email: riderEmail,
+      workStatus: "busy",
+    },
+    {
+      $set: {
+        workStatus: "available",
+        updatedAt: new Date(),
+      },
+    },
+  );
+
+  if (riderResult.modifiedCount === 0) {
+    throw new Error("Failed to release rider.");
   }
+
+  // -----------------------------
+  // 2. Reset order
+  // -----------------------------
 
   const orderResult = await orderCollection.updateOne(
     {
       _id: new ObjectId(orderId),
       orderStatus: "waiting_for_rider_acceptance",
+      riderEmail,
     },
     {
       $set: {
@@ -256,25 +321,36 @@ const rejectRider = async (orderId: string) => {
   );
 
   if (orderResult.modifiedCount === 0) {
+    // rollback rider
+    await riderCollection.updateOne(
+      {
+        email: riderEmail,
+      },
+      {
+        $set: {
+          workStatus: "busy",
+          updatedAt: new Date(),
+        },
+      },
+    );
+
     throw new Error("Failed to reject rider.");
   }
 
   await TrackingService.logTracking(order.trackingId, "ready_for_pickup");
 
-  await riderCollection.updateOne(
-    {
-      _id: rider._id,
-      workStatus: "busy",
-    },
-    {
-      $set: {
-        workStatus: "available",
-        updatedAt: new Date(),
-      },
-    },
+  return orderResult;
+};
+
+const decreaseStockForOrders = async (orders: IOrder[]) => {
+  const stockItems = orders.flatMap((order) =>
+    order.items.map((item) => ({
+      productId: item.productId,
+      quantity: item.quantity,
+    })),
   );
 
-  return orderResult;
+  await ProductService.decreaseStock(stockItems);
 };
 
 export const OrderService = {
@@ -283,4 +359,5 @@ export const OrderService = {
   updateOrderStatus,
   assignRider,
   rejectRider,
+  decreaseStockForOrders,
 };

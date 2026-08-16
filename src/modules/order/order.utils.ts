@@ -43,7 +43,7 @@ export const allowedStatusTransitions: Record<TOrderStatus, TOrderStatus[]> = {
 
   picked_up: ["out_for_delivery"],
 
-  out_for_delivery: ["delivered"],
+  out_for_delivery: ["delivered", "cancelled"],
 
   delivered: [],
 

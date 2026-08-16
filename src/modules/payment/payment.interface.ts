@@ -1,11 +1,7 @@
 import { ObjectId } from "mongodb";
 import { ICreateOrder } from "../order/order.interface";
 
-export type TPaymentStatus =
-  | "pending"
-  | "paid"
-  | "failed"
-  | "cancelled";
+export type TPaymentStatus = "pending" | "paid" | "failed" | "cancelled";
 
 export interface IPayment {
   _id?: ObjectId;
@@ -23,6 +19,8 @@ export interface IPayment {
   paymentMethod: "sslcommerz";
 
   status: TPaymentStatus;
+
+  cartProductIds: ObjectId[];
 
   valId?: string;
 

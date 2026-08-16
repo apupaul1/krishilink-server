@@ -19,7 +19,7 @@ const createRider = async (req: Request, res: Response) => {
 };
 
 const getAllRiders = async (req: Request, res: Response) => {
-  const { status, email } = req.query;
+  const { status, email, workStatus, district, area } = req.query;
 
   // if (email !== req.user.email) {
   //   const currentUser = await userCollection.findOne({
@@ -29,8 +29,10 @@ const getAllRiders = async (req: Request, res: Response) => {
 
   const result = await RiderService.getAllRiders({
     status: status as "pending" | "approved" | "rejected" | undefined,
-
     email: email as string | undefined,
+    workStatus: workStatus as "available" | "busy" | "offline" | undefined,
+    district: district as string | undefined,
+    area: area as string | undefined,
   });
 
   sendResponse(res, {
