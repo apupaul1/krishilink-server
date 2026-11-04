@@ -1,10 +1,11 @@
 import { Router } from "express";
 import verifyFirebaseToken from "../../app/middlewares/verifyFirebaseToken";
+import requireUserRole from "../../app/middlewares/requireUserRole";
 import { OrderController } from "./order.controller";
 
 const router = Router();
 
-router.post("/", verifyFirebaseToken, OrderController.createOrder);
+router.post("/", verifyFirebaseToken, requireUserRole, OrderController.createOrder);
 
 router.get("/", OrderController.getAllOrders);
 

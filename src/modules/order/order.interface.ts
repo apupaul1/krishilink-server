@@ -60,6 +60,7 @@ export interface IOrder {
   farmerLocation: {
     district: string;
     area: string;
+    union?: string;
     address: string;
   };
 

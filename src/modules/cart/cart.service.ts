@@ -72,6 +72,8 @@ const addToCart = async (email: string, payload: IAddToCart) => {
 
       area: product.location.area,
 
+      union: product.location.union,
+
       address: product.location.address,
     },
 
@@ -442,6 +444,7 @@ const buyNow = async (email: string, payload: IBuyNow) => {
     location: {
       district: product.location.district,
       area: product.location.area,
+      union: product.location.union,
       address: product.location.address,
     },
   };

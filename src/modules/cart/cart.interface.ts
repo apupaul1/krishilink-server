@@ -15,6 +15,7 @@ export interface ICartItem {
   location: {
     district: string;
     area: string;
+    union?: string;
     address: string;
   };
 

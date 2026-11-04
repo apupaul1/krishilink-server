@@ -165,14 +165,14 @@ const clearCart = async (req: Request, res: Response) => {
 };
 
 const buyNow = async (req: Request, res: Response) => {
-  const { email } = req.query;
+  const email = req.user.email;
 
   const { productId, quantity } = req.body;
 
-  if (!email || typeof email !== "string") {
-    return res.status(400).json({
+  if (!email) {
+    return res.status(401).json({
       success: false,
-      message: "Email is required.",
+      message: "User email not found.",
     });
   }
 

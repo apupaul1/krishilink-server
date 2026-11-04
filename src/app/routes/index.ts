@@ -8,6 +8,7 @@ import { OrderRoutes } from "../../modules/order/order.route";
 import { TrackingRoutes } from "../../modules/tracking/tracking.route";
 import { PaymentRoutes } from "../../modules/payment/payment.route";
 import { CartRoutes } from "../../modules/cart/cart.route";
+import { DashboardRoutes } from "../../modules/dashboard/dashboard.route";
 
 const router = Router();
 
@@ -20,5 +21,6 @@ router.use("/orders", OrderRoutes);
 router.use("/trackings", TrackingRoutes);
 router.use("/payments", PaymentRoutes);
 router.use("/carts", CartRoutes);
+router.use("/dashboard", DashboardRoutes);
 
 export default router;

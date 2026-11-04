@@ -102,6 +102,25 @@ npm run dev
 | GET | /api/v1/categories | Get all categories |
 | POST | /api/v1/categories | Create category |
 
+### Dashboard
+
+All dashboard endpoints require a Firebase ID token:
+
+```http
+Authorization: Bearer <firebase-id-token>
+```
+
+The caller is identified from the token. Role dashboards ignore any `email`
+query parameter, so a user can only read their own dashboard data.
+
+| Method | Endpoint | Role | Description |
+| ------ | -------- | ---- | ----------- |
+| GET | /api/v1/dashboard | Any authenticated | Role-aware overview payload |
+| GET | /api/v1/dashboard/admin | admin | Revenue, orders, farmers, riders, applications, top products, recent orders |
+| GET | /api/v1/dashboard/farmer | farmer | Sales, orders, products, inventory alerts, pending orders, top products |
+| GET | /api/v1/dashboard/rider | rider | Active delivery, delivery queue, completed deliveries, earnings |
+| GET | /api/v1/dashboard/user | authenticated user | Spending, order counts, current order, recent orders |
+
 ---
 
 ## 📌 Upcoming Features
@@ -112,7 +131,6 @@ npm run dev
 - Review System
 - Search & Filtering
 - Pagination
-- Dashboard APIs
 
 ---
 
