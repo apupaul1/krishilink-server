@@ -1,4 +1,4 @@
-import "../config/firebaseAdmin";
+import "../config/firebaseAdmin.js";
 import { getAuth } from "firebase-admin/auth";
 import { NextFunction, Request, Response } from "express";
 

@@ -59,7 +59,15 @@ PORT=5000
 
 DATABASE_URL=your_mongodb_connection_string
 DATABASE_NAME=krishilink
+
+FIREBASE_PROJECT_ID=your_firebase_project_id
+FIREBASE_CLIENT_EMAIL=your_firebase_client_email
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
 ```
+
+For Vercel, add these values in the project's Environment Variables settings.
+Keep the `\n` sequences in `FIREBASE_PRIVATE_KEY`; the server converts them to
+line breaks when initializing Firebase Admin.
 
 ---
 
