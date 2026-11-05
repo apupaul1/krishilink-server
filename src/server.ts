@@ -1,6 +1,7 @@
+import config from "./app/config/index.js";
+import "./app/config/firebaseAdmin.js";
 import app from "./app.js";
 import { client } from "./app/config/db.js";
-import config from "./app/config/index.js";
 
 const startServer = async () => {
   try {
